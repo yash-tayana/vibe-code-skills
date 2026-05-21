@@ -29,7 +29,7 @@ ${bold}Commands:${reset}
 
 ${bold}Options:${reset}
   ${yellow}-l, --local${reset}           Install to project-specific workspace folder (${cyan}./.agent/skills/${reset})
-  ${yellow}-g, --global${reset}          Install globally for all projects (${cyan}~/.gemini/antigravity/skills/${reset}) [Default]
+  ${yellow}-g, --global${reset}          Install globally as a plugin (${cyan}~/.gemini/config/plugins/vibe-code-skills/${reset}) [Default]
   ${yellow}-h, --help${reset}            Show this help menu
 
 ${bold}Examples:${reset}
@@ -108,9 +108,11 @@ if (!command || args.includes('-h') || args.includes('--help') || command === 'h
 const isLocal = args.includes('-l') || args.includes('--local');
 const targetDestinations = isLocal 
   ? [path.join(process.cwd(), '.agent/skills'), path.join(process.cwd(), '.agents/skills')]
-  : [path.join(os.homedir(), '.gemini/antigravity/skills')];
+  : [path.join(os.homedir(), '.gemini/config/plugins/vibe-code-skills')];
 
-const targetName = isLocal ? 'Local workspace (.agent/skills & .agents/skills)' : 'Global Antigravity (~/.gemini/antigravity/skills)';
+const targetName = isLocal 
+  ? 'Local workspace (.agent/skills & .agents/skills)' 
+  : 'Global Antigravity Plugin (~/.gemini/config/plugins/vibe-code-skills)';
 
 if (command === 'list') {
   console.log(`\n${bold}${cyan}Listing Available Agent Skills:${reset}\n`);
@@ -135,9 +137,28 @@ if (command === 'list') {
 
   if (skillArg === '--all') {
     console.log(`${bold}${blue}Installing all ${allSkills.length} skills to ${targetName}...${reset}`);
+    
+    // Copy plugin.json for global installation
+    if (!isLocal) {
+      for (const destDir of targetDestinations) {
+        try {
+          fs.mkdirSync(destDir, { recursive: true });
+          const pluginJsonSrc = path.join(__dirname, '../plugin.json');
+          const pluginJsonDest = path.join(destDir, 'plugin.json');
+          if (fs.existsSync(pluginJsonSrc)) {
+            fs.copyFileSync(pluginJsonSrc, pluginJsonDest);
+          }
+        } catch (err) {
+          console.error(`  ${red}✗ Failed to configure plugin.json at ${destDir}: ${err.message}${reset}`);
+        }
+      }
+    }
+
     for (const skill of allSkills) {
       for (const destDir of targetDestinations) {
-        const destPath = path.join(destDir, skill.id);
+        const destPath = isLocal 
+          ? path.join(destDir, skill.id) 
+          : path.join(destDir, 'skills', skill.id);
         try {
           copyRecursive(skill.path, destPath);
         } catch (err) {
@@ -157,8 +178,22 @@ if (command === 'list') {
 
     console.log(`${bold}${blue}Installing ${matchedSkill.id} to ${targetName}...${reset}`);
     try {
+      // Copy plugin.json for global installation
+      if (!isLocal) {
+        for (const destDir of targetDestinations) {
+          fs.mkdirSync(destDir, { recursive: true });
+          const pluginJsonSrc = path.join(__dirname, '../plugin.json');
+          const pluginJsonDest = path.join(destDir, 'plugin.json');
+          if (fs.existsSync(pluginJsonSrc)) {
+            fs.copyFileSync(pluginJsonSrc, pluginJsonDest);
+          }
+        }
+      }
+
       for (const destDir of targetDestinations) {
-        const destPath = path.join(destDir, matchedSkill.id);
+        const destPath = isLocal 
+          ? path.join(destDir, matchedSkill.id) 
+          : path.join(destDir, 'skills', matchedSkill.id);
         copyRecursive(matchedSkill.path, destPath);
       }
       console.log(`${bold}${green}Success: Installed ${matchedSkill.id}!${reset}`);

@@ -11,7 +11,8 @@
   "files": [
     "skills",
     "bin",
-    "README.md"
+    "README.md",
+    "plugin.json"
   ],
   "keywords": [
     "antigravity",
