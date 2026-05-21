@@ -29,7 +29,7 @@ ${bold}Commands:${reset}
 
 ${bold}Options:${reset}
   ${yellow}-l, --local${reset}           Install to project-specific workspace folder (${cyan}./.agent/skills/${reset})
-  ${yellow}-g, --global${reset}          Install globally as a plugin (${cyan}~/.gemini/config/plugins/vibe-code-skills/${reset}) [Default]
+  ${yellow}-g, --global${reset}          Install globally as a plugin (${cyan}config/plugins/ & antigravity-ide/plugins/${reset}) [Default]
   ${yellow}-h, --help${reset}            Show this help menu
 
 ${bold}Examples:${reset}
@@ -108,11 +108,14 @@ if (!command || args.includes('-h') || args.includes('--help') || command === 'h
 const isLocal = args.includes('-l') || args.includes('--local');
 const targetDestinations = isLocal 
   ? [path.join(process.cwd(), '.agent/skills'), path.join(process.cwd(), '.agents/skills')]
-  : [path.join(os.homedir(), '.gemini/config/plugins/vibe-code-skills')];
+  : [
+      path.join(os.homedir(), '.gemini/config/plugins/vibe-code-skills'),
+      path.join(os.homedir(), '.gemini/antigravity-ide/plugins/vibe-code-skills')
+    ];
 
 const targetName = isLocal 
   ? 'Local workspace (.agent/skills & .agents/skills)' 
-  : 'Global Antigravity Plugin (~/.gemini/config/plugins/vibe-code-skills)';
+  : 'Global Antigravity Plugins (~/.gemini/config/plugins/ & ~/.gemini/antigravity-ide/plugins/)';
 
 if (command === 'list') {
   console.log(`\n${bold}${cyan}Listing Available Agent Skills:${reset}\n`);
