@@ -106,11 +106,11 @@ if (!command || args.includes('-h') || args.includes('--help') || command === 'h
 }
 
 const isLocal = args.includes('-l') || args.includes('--local');
-const targetDest = isLocal 
-  ? path.join(process.cwd(), '.agent/skills')
-  : path.join(os.homedir(), '.gemini/antigravity/skills');
+const targetDestinations = isLocal 
+  ? [path.join(process.cwd(), '.agent/skills'), path.join(process.cwd(), '.agents/skills')]
+  : [path.join(os.homedir(), '.gemini/antigravity/skills')];
 
-const targetName = isLocal ? 'Local workspace (.agent/skills)' : 'Global Antigravity (~/.gemini/antigravity/skills)';
+const targetName = isLocal ? 'Local workspace (.agent/skills & .agents/skills)' : 'Global Antigravity (~/.gemini/antigravity/skills)';
 
 if (command === 'list') {
   console.log(`\n${bold}${cyan}Listing Available Agent Skills:${reset}\n`);
@@ -136,13 +136,15 @@ if (command === 'list') {
   if (skillArg === '--all') {
     console.log(`${bold}${blue}Installing all ${allSkills.length} skills to ${targetName}...${reset}`);
     for (const skill of allSkills) {
-      const destPath = path.join(targetDest, skill.id);
-      try {
-        copyRecursive(skill.path, destPath);
-        console.log(`  ${green}✓${reset} Installed ${bold}${skill.id}${reset}`);
-      } catch (err) {
-        console.error(`  ${red}✗ Failed to install ${skill.id}: ${err.message}${reset}`);
+      for (const destDir of targetDestinations) {
+        const destPath = path.join(destDir, skill.id);
+        try {
+          copyRecursive(skill.path, destPath);
+        } catch (err) {
+          console.error(`  ${red}✗ Failed to install ${skill.id} to ${destDir}: ${err.message}${reset}`);
+        }
       }
+      console.log(`  ${green}✓${reset} Installed ${bold}${skill.id}${reset}`);
     }
     console.log(`\n${bold}${green}All skills successfully configured. Please restart your Antigravity session to activate.${reset}\n`);
   } else {
@@ -153,10 +155,12 @@ if (command === 'list') {
       process.exit(1);
     }
 
-    const destPath = path.join(targetDest, matchedSkill.id);
     console.log(`${bold}${blue}Installing ${matchedSkill.id} to ${targetName}...${reset}`);
     try {
-      copyRecursive(matchedSkill.path, destPath);
+      for (const destDir of targetDestinations) {
+        const destPath = path.join(destDir, matchedSkill.id);
+        copyRecursive(matchedSkill.path, destPath);
+      }
       console.log(`${bold}${green}Success: Installed ${matchedSkill.id}!${reset}`);
       console.log(`Restart your Antigravity session to apply the changes.`);
     } catch (err) {
