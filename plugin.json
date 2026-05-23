@@ -1,0 +1,16 @@
+{
+  "name": "vibe-code-skills",
+  "version": "1.0.0",
+  "description": "Antigravity Agent Skills for AI-assisted development at Tayana",
+  "author": {
+    "name": "Yash Shrivastava"
+  },
+  "repository": "https://github.com/yash-tayana/vibe-code-skills",
+  "license": "MIT",
+  "keywords": [
+    "antigravity",
+    "agent-skills",
+    "prompting",
+    "ai-assisted-coding"
+  ]
+}
